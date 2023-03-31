@@ -35,7 +35,7 @@ const OwnerSchema: Schema = new Schema({
       validator(v: string) {
         return /(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})\b/.test(v)
       },
-      message: (props) => `${props.value} is not a valid phone number`,
+      message: (props: any) => `${props.value} is not a valid phone number`,
     },
     required: [true, 'Phone is required'],
   },
