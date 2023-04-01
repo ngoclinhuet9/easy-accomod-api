@@ -22,6 +22,35 @@ export const createRoom: MiddlewareFn = async (req, res, next) => {
   }
 }
 
+export const getRooms: MiddlewareFn = async (req, res, next) => {
+  try {
+    const {city, maxPrice, minPrice, roomType} = req?.query
+
+    let rooms: any[] = []
+
+    if (!city && roomType) {
+      rooms = await Room.find({roomType, roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED'})
+    } 
+    else if (!roomType && city) {
+      rooms = await Room.find({city, roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED'})
+    }
+    else if (!roomType && !city) {
+      rooms = await Room.find({roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED'})
+    }
+    else {
+      rooms = await Room.find({city, roomType, roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED'})
+    }
+    
+
+    return res.status(200).json({
+      success: true,
+      data: rooms,
+    })
+  } catch (error) {
+    
+  }
+}
+
 export const getRoomDetail: MiddlewareFn = async (req, res, next) => {
   try {
     const {room_id} = req.params
@@ -158,13 +187,13 @@ export const renewRoom: MiddlewareFn = async (req, res, next) => {
   try {
     const {room_id} = req.params
     const room = await Room.findOne({_id: room_id})
-    if (room?.isRent === false) {
+    if (room?.isRent === true) {
       return res.status(400).json({
         success: false,
         error: 'Not allow to edit room info',
       })
     }
-    if (room?.isRent === true) {
+    if (room?.isRent === false) {
       await room.update({...req.body, status: 'PENDING', isRent: false})
       if (room) {
         return res.status(200).json({

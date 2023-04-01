@@ -35,7 +35,18 @@ mongoose
 
 const app = express()
 
-app.use(cors())
+var allowlist = ['http://localhost:3000', 'http://owner.localhost:3000', 'http://admin.localhost:3000']
+var corsOptionsDelegate = function (req: any, callback: any) {
+  var corsOptions;
+  if (allowlist.indexOf(req.header('Origin')) !== -1) {
+    corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
+  } else {
+    corsOptions = { origin: false } // disable CORS for this request
+  }
+  callback(null, corsOptions) // callback expects two parameters: error and options
+}
+
+app.use(cors(corsOptionsDelegate))
 app.use(helmet())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
@@ -83,6 +94,7 @@ app.put('/api/rooms/:room_id/update', checkAuth, roomController.updateRoom) // o
 app.put('/api/rooms/:room_id/renew', checkAuth, roomController.renewRoom) // owner, admin
 app.get('/api/rooms/:room_id', checkAuthOrNot, roomController.getRoomDetail)
 app.get('/api/rooms/city/:city', roomController.getRoomsByCity)
+app.get('/api/rooms', roomController.getRooms)
 app.put('/api/rooms/:room_id/approve', checkAuth, roomController.approveRoom) // admin
 app.put('/api/rooms/:room_id/reject', checkAuth, roomController.rejectRoom) // admin
 
