@@ -78,6 +78,7 @@ app.get('/api/owner/rooms/approved', checkAuth, ownerController.getApprovedRooms
 app.get('/api/owner/rooms/rejected', checkAuth, ownerController.getRejectedRooms)
 app.get('/api/owner/rooms/ready', checkAuth, ownerController.getReadyRooms)
 app.get('/api/owner/rooms/rent', checkAuth, ownerController.getRentRooms)
+app.get('/api/owner/rooms/rent/:renterRoomId', checkAuth, ownerController.getRentRoomsById)
 app.put('/api/owner/rooms/:room_id/rent', checkAuth, ownerController.handleRentRoom)
 app.put('/api/owner/rooms/:room_id/return', checkAuth, ownerController.handleReturnRoom)
 /**

@@ -228,6 +228,23 @@ export const getRentRooms: MiddlewareFn = async (req, res, next) => {
   }
 }
 
+export const getRentRoomsById: MiddlewareFn = async (req, res, next) => {
+  try {
+    const {renterRoomId} = req.params;
+    const renterRooms = await renterRoom.findOne({_id: renterRoomId}).populate('room').populate('renter')
+    return res.status(200).json({
+      success: true,
+      data: renterRooms,
+    })
+  } catch (error) {
+    console.log(error)
+    return res.status(400).json({
+      success: false,
+      error: 'get rooms failed',
+    })
+  }
+}
+
 export const getReadyRooms: MiddlewareFn = async (req, res, next) => {
   try {
     const {_id} = req.user
