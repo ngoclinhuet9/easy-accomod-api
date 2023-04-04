@@ -148,13 +148,14 @@ const RoomSchema: Schema = new Schema({
   },
   images: {
     type: [String],
-    required: [true, 'images is required'],
-    validate: {
-      validator(v: [string]) {
-        return v.length >= 3
-      },
-      message: () => `minimum is 3 images`,
-    },
+    required: false,
+    // required: [true, 'images is required'],
+    // validate: {
+    //   validator(v: [string]) {
+    //     return v.length >= 3
+    //   },
+    //   message: () => `minimum is 3 images`,
+    // },
   },
   isWithOwner: {
     type: Boolean,
@@ -184,7 +185,7 @@ const RoomSchema: Schema = new Schema({
   status: {
     type: String,
     required: [true, 'Status is required'],
-    enum: ['APPROVED', 'REJECTED', 'PENDING'],
+    enum: ['APPROVED', 'REJECTED', 'PENDING','BOOKING'],
     default: 'PENDING',
   },
   isActive: {

@@ -48,7 +48,7 @@ var corsOptionsDelegate = function (req: any, callback: any) {
 
 app.use(cors(corsOptionsDelegate))
 app.use(helmet())
-app.use(bodyParser.json())
+app.use(bodyParser.json({limit: '50mb'}))
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(compression())
 app.use(hpp())
@@ -97,6 +97,7 @@ app.get('/api/rooms/city/:city', roomController.getRoomsByCity)
 app.get('/api/rooms', roomController.getRooms)
 app.put('/api/rooms/:room_id/approve', checkAuth, roomController.approveRoom) // admin
 app.put('/api/rooms/:room_id/reject', checkAuth, roomController.rejectRoom) // admin
+app.post('/api/rooms/:room_id/booking', checkAuth, roomController.bookingRoom) //renter
 
 /**
  * review api

@@ -16,6 +16,10 @@ const RenterSchema: Schema = new Schema({
     type: String,
     required: [true, 'Name is required'],
   },
+  phone: {
+    type: String,
+    required: false,
+  },
   isActive: {
     type: String,
     required: [true, 'isActive is required'],

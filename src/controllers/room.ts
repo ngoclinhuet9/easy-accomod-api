@@ -1,4 +1,6 @@
 import Room from '../models/room'
+import User from '../models/user'
+import renterRoom from '../models/renterRoom'
 import Bookmark from '../models/bookmark'
 import Review from '../models/review'
 import {MiddlewareFn} from '../types/express'
@@ -159,14 +161,14 @@ export const updateRoom: MiddlewareFn = async (req, res, next) => {
   try {
     const {room_id} = req.params
     const room = await Room.findOne({_id: room_id})
-    if (room?.status === 'APPROVED') {
+    if (room?.isRent === true) {
       return res.status(400).json({
         success: false,
         error: 'Not allow to edit room info',
       })
     }
-    if (room?.status === 'PENDING') {
-      await room.update({...req.body})
+    if (room?.isRent === false) {
+      await room.update({...req.body, status: 'PENDING'})
       if (room) {
         return res.status(200).json({
           success: true,
@@ -187,13 +189,13 @@ export const renewRoom: MiddlewareFn = async (req, res, next) => {
   try {
     const {room_id} = req.params
     const room = await Room.findOne({_id: room_id})
-    if (room?.isRent === true) {
+    if (room?.isRent === false) {
       return res.status(400).json({
         success: false,
         error: 'Not allow to edit room info',
       })
     }
-    if (room?.isRent === false) {
+    if (room?.isRent === true) {
       await room.update({...req.body, status: 'PENDING', isRent: false})
       if (room) {
         return res.status(200).json({
@@ -201,6 +203,40 @@ export const renewRoom: MiddlewareFn = async (req, res, next) => {
           data: {...room, ...req.body},
         })
       }
+    }
+  } catch (error) {
+    console.log(error)
+    return res.status(400).json({
+      success: false,
+      error: 'update failed',
+    })
+  }
+}
+
+export const bookingRoom: MiddlewareFn = async (req, res, next) => {
+  try {
+    const startDate= req.body._startDate
+    const endDate= req.body._endDate
+    const {room_id} = req.params
+    const {_id} = req.user
+    const room = await Room.findOne({_id: room_id})
+    const newRentRoom = new renterRoom({renter: _id, room: room_id, owner: room?.owner, startDate: startDate, endDate: endDate, payFlag: false})
+    if (room?.isRent === true || room?.status != 'APPROVED') {
+      return res.status(400).json({
+        success: false,
+        error: 'Not allow to edit room info',
+      })
+    }
+    if (room?.isRent === false && room?.status === 'APPROVED') {
+        newRentRoom.save()
+        await room.update({status: 'BOOKING', isRent: true})
+        return res.status(200).json({
+          success: true,
+          data: [
+            newRentRoom,
+            room,
+          ]
+        })
     }
   } catch (error) {
     console.log(error)

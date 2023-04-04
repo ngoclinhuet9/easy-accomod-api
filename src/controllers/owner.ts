@@ -1,7 +1,10 @@
 import Owner from '../models/owner'
 import User from '../models/user'
 import Room from '../models/room'
+import renterRoom from '../models/renterRoom'
+import renter from '../models/renter'
 import {MiddlewareFn} from '../types/express.d'
+import { ALL } from 'dns'
 
 export const createOwner: MiddlewareFn = async (req, res, next) => {
   try {
@@ -210,7 +213,8 @@ export const getApprovedRooms: MiddlewareFn = async (req, res, next) => {
 export const getRentRooms: MiddlewareFn = async (req, res, next) => {
   try {
     const {_id} = req.user
-    const rooms = await Room.find({owner: _id, isRent: true})
+    const rooms = await renterRoom.find({owner: _id}).populate('room').populate('renter')
+    // const rooms = await Room.find({owner: _id, isRent: true}).populate('renter')
     return res.status(200).json({
       success: true,
       data: rooms,
@@ -245,12 +249,12 @@ export const handleRentRoom: MiddlewareFn = async (req, res, next) => {
   try {
     const {_id} = req.user
     const {room_id} = req.params
-    const room = await Room.findOne({_id: room_id, owner: _id})
-    if (room) {
-      await room.update({isRent: true})
+    const renterRooms = await renterRoom.findOne({_id: room_id, owner: _id})
+    if (renterRooms) {
+      await renterRooms.update({payFlag: true})
       return res.status(200).json({
         success: true,
-        data: room,
+        data: renterRooms,
       })
     }
     return res.status(403).json({

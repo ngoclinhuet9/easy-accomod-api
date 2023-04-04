@@ -4,9 +4,9 @@ import {MiddlewareFn} from '../types/express.d'
 
 export const createRenter: MiddlewareFn = async (req, res, next) => {
   try {
-    const {email, name}: {email: string; name: string} = req.body
+    const {email, name, phone}: {email: string; name: string; phone: string} = req.body
     const _id = req.user.uid
-    const newRenter = new Renter({email, name})
+    const newRenter = new Renter({email, name, phone})
     await newRenter.save()
 
     const newUser = new User({roles: ['renter'], _id, renter: newRenter._id})
@@ -17,6 +17,7 @@ export const createRenter: MiddlewareFn = async (req, res, next) => {
       data: {
         email,
         name,
+        phone,
       },
     })
   } catch (error) {
