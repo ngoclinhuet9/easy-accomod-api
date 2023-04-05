@@ -80,7 +80,8 @@ app.get('/api/owner/rooms/ready', checkAuth, ownerController.getReadyRooms)
 app.get('/api/owner/rooms/rent', checkAuth, ownerController.getRentRooms)
 app.get('/api/owner/rooms/rent/:renterRoomId', checkAuth, ownerController.getRentRoomsById)
 app.put('/api/owner/rooms/:room_id/rent', checkAuth, ownerController.handleRentRoom)
-app.put('/api/owner/rooms/:room_id/return', checkAuth, ownerController.handleReturnRoom)
+app.put('/api/owner/rooms/:renterRoom_id/return', checkAuth, ownerController.handleReturnRoom)
+app.delete('/api/owner/rooms/:room_id/delete', checkAuth, ownerController.handleDeleteRoom)
 /**
  * admin api
  */

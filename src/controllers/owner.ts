@@ -290,10 +290,13 @@ export const handleRentRoom: MiddlewareFn = async (req, res, next) => {
 export const handleReturnRoom: MiddlewareFn = async (req, res, next) => {
   try {
     const {_id} = req.user
-    const {room_id} = req.params
-    const room = await Room.findOne({_id: room_id, owner: _id})
+    const {renterRoom_id} = req.params
+    const renterRooms = await renterRoom.findOne({_id: renterRoom_id, owner: _id})
+    const room = await Room.findOne({_id: renterRooms?.room, owner: _id})
     if (room) {
-      await room.update({isRent: false})
+      console.log("----Kinh")
+      await room.update({isRent: false, status: 'APPROVED'})
+      await renterRoom.deleteOne({_id: renterRoom_id, owner: _id})
       return res.status(200).json({
         success: true,
         data: room,
@@ -311,3 +314,30 @@ export const handleReturnRoom: MiddlewareFn = async (req, res, next) => {
     })
   }
 }
+
+export const handleDeleteRoom: MiddlewareFn = async (req, res, next) => {
+  try {
+    const {_id} = req.user
+    const {room_id} = req.params
+    const room = await Room.findOne({_id: room_id, owner: _id})
+    if (room) {
+      await Room.deleteOne({_id: room_id, owner: _id})
+      return res.status(200).json({
+        success: true,
+        data: room,
+      })
+    }
+    return res.status(403).json({
+      success: false,
+      error: 'Not allow to update',
+    })
+  } catch (error) {
+    console.log(error)
+    return res.status(400).json({
+      success: false,
+      error: 'Delete rooms failed',
+    })
+  }
+}
+
+
