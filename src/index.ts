@@ -22,7 +22,9 @@ dotenv.config()
 const PORT: number = parseInt(process.env.PORT as string, 10) || 8000
 const {DB_USERNAME, DB_PASSWORD, DB_NAME} = process.env
 
-const MONGODB_URI = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@cluster0.3ukly.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`
+// const MONGODB_URI = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@cluster0.3ukly.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`
+const MONGODB_URI = `mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0`
+
 
 mongoose
   .connect(MONGODB_URI, {
@@ -86,6 +88,7 @@ app.delete('/api/owner/rooms/:room_id/delete', checkAuth, ownerController.handle
  * admin api
  */
 app.post('/api/admins/create', getUID, adminController.createAdmin)
+app.get('/api/admin/getDashboadRoom', checkAuth, adminController.getDashboardRoom)
 
 /**
  * room api

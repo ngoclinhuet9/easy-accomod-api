@@ -9,9 +9,7 @@ import {log} from "util";
 export const createRoom: MiddlewareFn = async (req, res, next) => {
   try {
     const {_id} = req.user
-    console.log(req.body)
     const newRoom = new Room({owner: _id, ...req.body})
-    console.log(newRoom, '=======================')
     await newRoom.save()
     await newRoom.populate('owner')
     return res.status(200).json({
@@ -59,6 +57,7 @@ export const getRooms: MiddlewareFn = async (req, res, next) => {
 export const getRoomDetail: MiddlewareFn = async (req, res, next) => {
   try {
     const {room_id} = req.params
+    console.log(room_id);
     const room = await Room.findOne({_id: room_id}).populate('owner')
     const reviews = await Review.find({room: room_id}).populate('renter')
     const {_id} = req.user
@@ -223,8 +222,8 @@ export const bookingRoom: MiddlewareFn = async (req, res, next) => {
     const {room_id} = req.params
     const {_id} = req.user
     const room = await Room.findOne({_id: room_id})
-
-
+    const newRentRoom = new renterRoom({renter: _id, room: room_id, owner: room?.owner, startDate: startDate, endDate: endDate, payFlag: false})
+      
     if (room?.isRent === true || room?.status != 'APPROVED') {
       return res.status(400).json({
         success: false,
@@ -233,18 +232,16 @@ export const bookingRoom: MiddlewareFn = async (req, res, next) => {
     }
 
     if (room?.isRent === false && room?.status === 'APPROVED') {
-        // await room.update({ isRent: true })
-      await Room.findOneAndUpdate({_id: room_id}, {...room} )
-
-        const newRentRoom = new renterRoom({renter: _id, room: room_id, owner: room?.owner, startDate: startDate, endDate: endDate, payFlag: false})
-        newRentRoom.save()
-        return res.status(200).json({
-          success: true,
-          data: [
-            newRentRoom,
-            room,
-          ]
-        })
+      await room.update({ isRent: true })
+      //await Room.findOneAndUpdate({_id: room_id}, {...room} )
+      newRentRoom.save()
+      return res.status(200).json({
+        success: true,
+        data: [
+          newRentRoom,
+          room,
+        ]
+      })
     }
   } catch (error) {
     console.log(error)

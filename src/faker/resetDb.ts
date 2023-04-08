@@ -38,7 +38,7 @@ const resetFirebase = async () => {
 const resetMongodb = async () => {
   const {DB_USERNAME, DB_PASSWORD, DB_NAME} = process.env
 
-  const MONGODB_URI = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@cluster0.3ukly.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`
+  const MONGODB_URI = `mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.8.0`
 
   mongoose
     .connect(MONGODB_URI, {
