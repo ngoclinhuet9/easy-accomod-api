@@ -29,6 +29,7 @@ export interface RoomDocument extends Document {
   expiredDate: Date
   views: number
   isRent: boolean
+  countRent: number
   status: string
   isActive: boolean
 }
@@ -182,10 +183,15 @@ const RoomSchema: Schema = new Schema({
     required: [true, 'isRent is required'],
     default: false,
   },
+  countRent: {
+    type: Number,
+    required: [true, 'isRent is required'],
+    default: 0,
+  },
   status: {
     type: String,
     required: [true, 'Status is required'],
-    enum: ['APPROVED', 'REJECTED', 'PENDING','BOOKING'],
+    enum: ['APPROVED', 'REJECTED', 'PENDING'],
     default: 'PENDING',
   },
   isActive: {

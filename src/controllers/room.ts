@@ -223,7 +223,7 @@ export const bookingRoom: MiddlewareFn = async (req, res, next) => {
     const {_id} = req.user
     const room = await Room.findOne({_id: room_id})
     const newRentRoom = new renterRoom({renter: _id, room: room_id, owner: room?.owner, startDate: startDate, endDate: endDate, payFlag: false})
-      
+    console.log(room);
     if (room?.isRent === true || room?.status != 'APPROVED') {
       return res.status(400).json({
         success: false,
@@ -232,7 +232,7 @@ export const bookingRoom: MiddlewareFn = async (req, res, next) => {
     }
 
     if (room?.isRent === false && room?.status === 'APPROVED') {
-      await room.update({ isRent: true })
+      //await room.update({ isRent: true })
       //await Room.findOneAndUpdate({_id: room_id}, {...room} )
       newRentRoom.save()
       return res.status(200).json({

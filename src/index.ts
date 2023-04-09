@@ -89,6 +89,7 @@ app.delete('/api/owner/rooms/:room_id/delete', checkAuth, ownerController.handle
  */
 app.post('/api/admins/create', getUID, adminController.createAdmin)
 app.get('/api/admin/getDashboadRoom', checkAuth, adminController.getDashboardRoom)
+app.get('/api/admin/getDashBoardRentRate', checkAuth, adminController.getDashboardRentedRate)
 
 /**
  * room api

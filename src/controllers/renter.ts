@@ -20,7 +20,7 @@ export const createRenter: MiddlewareFn = async (req, res, next) => {
         phone,
       },
     })
-  } catch (error) {
+  } catch (error: any) {
     console.log(error)
     if (error?.code === 11000) {
       return res.status(400).json({

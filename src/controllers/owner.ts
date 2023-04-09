@@ -3,6 +3,7 @@ import User from '../models/user'
 import Room from '../models/room'
 import renterRoom from '../models/renterRoom'
 import renter from '../models/renter'
+import RentHistory from '../models/rentHistory'
 import {MiddlewareFn} from '../types/express.d'
 import { ALL } from 'dns'
 
@@ -32,7 +33,7 @@ export const createOwner: MiddlewareFn = async (req, res, next) => {
         phone,
       },
     })
-  } catch (error) {
+  } catch (error: any) {
     if (error?.code === 11000) {
       return res.status(400).json({
         success: false,
@@ -267,11 +268,16 @@ export const handleRentRoom: MiddlewareFn = async (req, res, next) => {
     const {_id} = req.user
     const {room_id} = req.params
     const renterRooms = await renterRoom.findOne({_id: room_id, owner: _id})
+    const room = await Room.findOne({_id: renterRooms?.room})
+    const newRentHistory = new RentHistory({renter: _id, room: room_id, owner: room?.owner, 
+      startDate: renterRooms?.startDate, endDate: renterRooms?.endDate, createDate: new Date()})
     if (renterRooms) {
       await renterRooms.update({payFlag: true})
+      await room?.update({isRent: true, countRent: room?.countRent + 1})
+      await newRentHistory.save()
       return res.status(200).json({
         success: true,
-        data: renterRooms,
+        data: {renterRooms, newRentHistory}
       })
     }
     return res.status(403).json({
