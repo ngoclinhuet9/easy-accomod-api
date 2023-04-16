@@ -1,7 +1,7 @@
 import {Schema, Document} from 'mongoose'
 
 export interface ReviewDocument extends Document {
-  renter: Schema.Types.ObjectId
+  user: Schema.Types.ObjectId
   room: Schema.Types.ObjectId
   content: string
   rating?: number
@@ -9,10 +9,10 @@ export interface ReviewDocument extends Document {
 }
 
 const ReviewSchema: Schema = new Schema({
-  renter: {
+  user: {
     type: Schema.Types.ObjectId,
     required: [true, 'renter is required'],
-    ref: 'Renter',
+    ref: 'User',
   },
   room: {
     type: Schema.Types.ObjectId,
@@ -32,7 +32,7 @@ const ReviewSchema: Schema = new Schema({
     type: String,
     required: true,
     enum: ['APPROVED', 'REJECTED', 'PENDING'],
-    default: 'PENDING',
+    default: 'APPROVED',
   },
 })
 

@@ -1,7 +1,7 @@
 import {Schema, Document} from 'mongoose'
 
 export interface RoomDocument extends Document {
-  owner: Schema.Types.ObjectId
+  user: Schema.Types.ObjectId
   reviews: [Schema.Types.ObjectId]
   roomType: string
   roomQuantity: number
@@ -35,10 +35,10 @@ export interface RoomDocument extends Document {
 }
 
 const RoomSchema: Schema = new Schema({
-  owner: {
+  user: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: 'Owner',
+    ref: 'User',
   },
   reviews: [
     {

@@ -3,10 +3,10 @@ import {MiddlewareFn} from '../types/express.d'
 
 export const createReview: MiddlewareFn = async (req, res, next) => {
   try {
-    const {_id} = req.user
+    const user_id = req.user._id
     const {content, rating, roomId}: {content: string; rating: number; roomId: string} = req.body
     const newReview = new Review({
-      renter: _id,
+      user: user_id,
       room: roomId,
       content,
       rating,
@@ -15,7 +15,7 @@ export const createReview: MiddlewareFn = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       data: {
-        renter: _id,
+        renter: user_id,
         room: roomId,
         content,
         rating,

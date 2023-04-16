@@ -1,45 +1,71 @@
 import {Schema, Document} from 'mongoose'
 
 export interface UserDocument extends Document {
-  _id: string
-  roles: [string]
-  user?: Schema.Types.ObjectId
-  admin?: Schema.Types.ObjectId
-  renter?: Schema.Types.ObjectId
-  owner?: Schema.Types.ObjectId
+  role: string
   status: string
+  email: string
+  identity: string
+  name: string
+  address: string
+  phone: string
+  rooms: [Schema.Types.ObjectId]
+  isActive: boolean
 }
 
 const UserSchema: Schema = new Schema({
-  _id: {
+  uid: {
     type: String,
-    required: [true, '_id is required'],
+    required: [true, 'uid is required'],
   },
-  roles: {
-    type: [String],
-    required: [true, 'isActive is required'],
+  role: {
+    type: String,
+    required: [true, 'role is required'],
     enum: ['admin', 'renter', 'owner'],
-  },
-  renter: {
-    type: Schema.Types.ObjectId,
-    required: false,
-    ref: 'Renter',
-  },
-  admin: {
-    type: Schema.Types.ObjectId,
-    required: false,
-    ref: 'Admin',
-  },
-  owner: {
-    type: Schema.Types.ObjectId,
-    required: false,
-    ref: 'Owner',
   },
   status: {
     type: String,
     required: [true, 'Status is required'],
     enum: ['APPROVED', 'REJECTED', 'PENDING'],
     default: 'PENDING',
+  },
+  email: {
+    type: String,
+    unique: [true, 'Email is existed'],
+    required: [true, 'Email is required'],
+  },
+  identity: {
+    type: String,
+    required: [false, 'Identity is required'],
+  },
+  name: {
+    type: String,
+    required: [true, 'Name is required'],
+  },
+  address: {
+    type: String,
+    required: [false, 'Address is required'],
+  },
+  phone: {
+    type: String,
+    validate: {
+      validator(v: string) {
+        return /(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})\b/.test(v)
+      },
+      message: (props: any) => `${props.value} is not a valid phone number`,
+    },
+    required: [false, 'Phone is required'],
+   },
+  rooms: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Room',
+    },
+  ],
+  isActive: {
+    type: String,
+    required: [false, 'isActive is required'],
+    enum: [true, false],
+    default: true,
   },
 })
 

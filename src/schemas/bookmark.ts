@@ -1,16 +1,16 @@
 import {Schema, Document} from 'mongoose'
 
 export interface BookmarkDocument extends Document {
-  renter: Schema.Types.ObjectId
+  user: Schema.Types.ObjectId
   room: Schema.Types.ObjectId
   isActive: boolean
 }
 
 const BookmarkSchema: Schema = new Schema({
-  renter: {
+  user: {
     type: Schema.Types.ObjectId,
     required: [true, 'renter is required'],
-    ref: 'Renter',
+    ref: 'User',
   },
   room: {
     type: Schema.Types.ObjectId,

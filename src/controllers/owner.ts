@@ -1,8 +1,9 @@
 import Owner from '../models/owner'
 import User from '../models/user'
 import Room from '../models/room'
-import renterRoom from '../models/renterRoom'
+import RenterRoom from '../models/renterRoom'
 import renter from '../models/renter'
+import Review from '../models/review'
 import RentHistory from '../models/rentHistory'
 import {MiddlewareFn} from '../types/express.d'
 import { ALL } from 'dns'
@@ -17,10 +18,10 @@ export const createOwner: MiddlewareFn = async (req, res, next) => {
       phone,
     }: {email: string; identity: string; name: string; address: string; phone: string} = req.body
     const _id = req.user.uid
-    const newOwner = new Owner({email, identity, name, address, phone})
-    await newOwner.save()
+    // const newOwner = new Owner({email, identity, name, address, phone})
+    // await newOwner.save()
 
-    const newUser = new User({roles: ['owner'], _id, owner: newOwner._id})
+    const newUser = new User({roles: ['owner'], _id, email, identity, name, address, phone})
     await newUser.save()
 
     return res.status(200).json({
@@ -50,11 +51,9 @@ export const createOwner: MiddlewareFn = async (req, res, next) => {
 
 export const getPendingOwners: MiddlewareFn = async (req, res, next) => {
   try {
-    const owners = await User.find({status: 'PENDING', roles: {$in: ['owner']}}).populate({
-      path: 'owner',
-      select: '-_id',
-      match: {status: 'PENDING'},
-    })
+    const owners = await User.find({status: 'PENDING', role: 'owner'})
+    console.log(owners);
+    
     if (owners) {
       return res.status(200).json({
         success: true,
@@ -72,13 +71,13 @@ export const getPendingOwners: MiddlewareFn = async (req, res, next) => {
 
 export const getApprovedOwners: MiddlewareFn = async (req, res, next) => {
   try {
-    const owners = await User.find({status: 'APPROVED', roles: {$in: ['owner']}})
-      .populate({
-        path: 'owner',
-        // select: '-_id',
-        model: 'Owner',
-        match: {status: 'APPROVED'},
-      })
+    const owners = await User.find({status: 'APPROVED', role: 'owner'})
+      // .populate({
+      //   path: 'owner',
+      //   // select: '-_id',
+      //   model: 'Owner',
+      //   match: {status: 'APPROVED'},
+      // })
       .exec()
     if (owners) {
       return res.status(200).json({
@@ -98,9 +97,7 @@ export const getApprovedOwners: MiddlewareFn = async (req, res, next) => {
 export const approveOwner: MiddlewareFn = async (req, res, next) => {
   try {
     const {owner_id} = req.params
-    const user = await User.findOne({_id: owner_id}).populate('owner')
-    const owner = await Owner.findOne({_id: user?.get('owner')._id})
-    await user?.update({status: 'APPROVED'})
+    const owner = await User.findOne({_id: owner_id})
     await owner?.update({status: 'APPROVED'})
     if (owner) {
       return res.status(200).json({
@@ -120,10 +117,10 @@ export const approveOwner: MiddlewareFn = async (req, res, next) => {
 export const rejectOwner: MiddlewareFn = async (req, res, next) => {
   try {
     const {owner_id} = req.params
-    const user = await User.findOne({_id: owner_id}).populate('owner')
-    const owner = await Owner.findOne({_id: user?.get('owner')._id})
-    await user?.update({status: 'REJECTED'})
+    const owner = await User.findOne({_id: owner_id})//.populate('owner')
+    //const owner = await Owner.findOne({_id: user?.get('owner')._id})
     await owner?.update({status: 'REJECTED'})
+    //await owner?.update({status: 'REJECTED'})
     if (owner) {
       return res.status(200).json({
         success: true,
@@ -163,7 +160,7 @@ export const updateOwnerInfo: MiddlewareFn = async (req, res, next) => {
 export const getPendingRooms: MiddlewareFn = async (req, res, next) => {
   try {
     const {_id} = req.user
-    const rooms = await Room.find({owner: _id, status: 'PENDING'})
+    const rooms = await Room.find({user: _id, status: 'PENDING'})
     return res.status(200).json({
       success: true,
       data: rooms,
@@ -180,7 +177,7 @@ export const getPendingRooms: MiddlewareFn = async (req, res, next) => {
 export const getRejectedRooms: MiddlewareFn = async (req, res, next) => {
   try {
     const {_id} = req.user
-    const rooms = await Room.find({owner: _id, status: 'REJECTED'})
+    const rooms = await Room.find({user: _id, status: 'REJECTED'})
     return res.status(200).json({
       success: true,
       data: rooms,
@@ -197,7 +194,7 @@ export const getRejectedRooms: MiddlewareFn = async (req, res, next) => {
 export const getApprovedRooms: MiddlewareFn = async (req, res, next) => {
   try {
     const {_id} = req.user
-    const rooms = await Room.find({owner: _id, status: 'APPROVED'})
+    const rooms = await Room.find({user: _id, status: 'APPROVED'})
     return res.status(200).json({
       success: true,
       data: rooms,
@@ -213,9 +210,31 @@ export const getApprovedRooms: MiddlewareFn = async (req, res, next) => {
 
 export const getRentRooms: MiddlewareFn = async (req, res, next) => {
   try {
-    const {_id} = req.user
-    const rooms = await renterRoom.find({owner: _id}).populate('room').populate('renter')
-    // const rooms = await Room.find({owner: _id, isRent: true}).populate('renter')
+    const user_id = req.user._id
+    const ownerRooms: any[] = [];
+    (await Room.find({user: user_id})).forEach((room: any) => {
+      ownerRooms.push(room._id)
+    })
+    const rooms = await RenterRoom.find({
+      room: {$exists: true, $in: ownerRooms}
+    }).populate('room').populate('user')
+    return res.status(200).json({
+      success: true,
+      data: rooms,
+    })
+  } catch (error) {
+    console.log(error)
+    return res.status(400).json({
+      success: false,
+      error: 'get rooms failed',
+    })
+  }
+}
+export const getRentRoomsRenter: MiddlewareFn = async (req, res, next) => {
+  try {
+    const user_id = req.user._id
+    const rooms = await RenterRoom.find({user: user_id}).populate('room').populate('user')
+    // const rooms = await Room.find({user: _id, isRent: true}).populate('renter')
     return res.status(200).json({
       success: true,
       data: rooms,
@@ -232,10 +251,13 @@ export const getRentRooms: MiddlewareFn = async (req, res, next) => {
 export const getRentRoomsById: MiddlewareFn = async (req, res, next) => {
   try {
     const {renterRoomId} = req.params;
-    const renterRooms = await renterRoom.findOne({_id: renterRoomId}).populate('room').populate('renter')
+    const renterRooms = await RenterRoom.findOne({_id: renterRoomId}).populate('room').populate('user')
+    const reviews = await Review.find({room: renterRooms?.room}).populate('user')
+    console.log(reviews,'tesst');
+    
     return res.status(200).json({
       success: true,
-      data: renterRooms,
+      data: {renterRooms,reviews}
     })
   } catch (error) {
     console.log(error)
@@ -249,7 +271,16 @@ export const getRentRoomsById: MiddlewareFn = async (req, res, next) => {
 export const getReadyRooms: MiddlewareFn = async (req, res, next) => {
   try {
     const {_id} = req.user
-    const rooms = await Room.find({owner: _id, isRent: false, status: 'APPROVED'})
+    const renterRooms: any[] = [];
+    (await RenterRoom.find()).forEach((renterRoom: any) => {
+      renterRooms.push(renterRoom.room)
+    })
+    const rooms = await Room.find({
+      user: _id, 
+      isRent: false,
+      status: 'APPROVED',
+      _id: {$exists: true, $nin: renterRooms}
+    })
     return res.status(200).json({
       success: true,
       data: rooms,
@@ -265,12 +296,13 @@ export const getReadyRooms: MiddlewareFn = async (req, res, next) => {
 
 export const handleRentRoom: MiddlewareFn = async (req, res, next) => {
   try {
-    const {_id} = req.user
-    const {room_id} = req.params
-    const renterRooms = await renterRoom.findOne({_id: room_id, owner: _id})
+    let currentDate = new Date()
+    const {user_id} = req.user
+    const renterRoom_id = req.params.room_id
+    const renterRooms = await RenterRoom.findOne({_id: renterRoom_id})
     const room = await Room.findOne({_id: renterRooms?.room})
-    const newRentHistory = new RentHistory({renter: _id, room: room_id, owner: room?.owner, 
-      startDate: renterRooms?.startDate, endDate: renterRooms?.endDate, createDate: new Date()})
+    const newRentHistory = new RentHistory({user: renterRooms?.user, room: room?.id, 
+      startDate: renterRooms?.startDate, endDate: renterRooms?.endDate, createDate: currentDate})
     if (renterRooms) {
       await renterRooms.update({payFlag: true})
       await room?.update({isRent: true, countRent: room?.countRent + 1})
@@ -295,14 +327,13 @@ export const handleRentRoom: MiddlewareFn = async (req, res, next) => {
 
 export const handleReturnRoom: MiddlewareFn = async (req, res, next) => {
   try {
-    const {_id} = req.user
-    const {renterRoom_id} = req.params
-    const renterRooms = await renterRoom.findOne({_id: renterRoom_id, owner: _id})
-    const room = await Room.findOne({_id: renterRooms?.room, owner: _id})
+    const {user_id} = req.user
+    const renterRoom_id = req.params.room_id
+    const renterRooms = await RenterRoom.findOne({_id: renterRoom_id})
+    const room = await Room.findOne({_id: renterRooms?.room})
     if (room) {
-      console.log("----Kinh")
-      await room.update({isRent: false, status: 'APPROVED'})
-      await renterRoom.deleteOne({_id: renterRoom_id, owner: _id})
+      //await room.update({isRent: false, status: 'APPROVED'})
+      await RenterRoom.deleteOne({_id: renterRoom_id})
       return res.status(200).json({
         success: true,
         data: room,
@@ -323,11 +354,11 @@ export const handleReturnRoom: MiddlewareFn = async (req, res, next) => {
 
 export const handleDeleteRoom: MiddlewareFn = async (req, res, next) => {
   try {
-    const {_id} = req.user
+    const {user_id} = req.user
     const {room_id} = req.params
-    const room = await Room.findOne({_id: room_id, owner: _id})
+    const room = await Room.findOne({_id: room_id})
     if (room) {
-      await Room.deleteOne({_id: room_id, owner: _id})
+      await Room.deleteOne({_id: room_id})
       return res.status(200).json({
         success: true,
         data: room,
@@ -345,5 +376,6 @@ export const handleDeleteRoom: MiddlewareFn = async (req, res, next) => {
     })
   }
 }
+
 
 

@@ -41,10 +41,15 @@ admin
     password: '123456',
   })
   .then(async (userRecord) => {
-    const newAdmin = new Admin({email: 'admin@gmail.com', name: 'Admin'})
-    await newAdmin.save()
-
-    const newUser = new User({roles: ['admin'], _id: userRecord.uid, admin: newAdmin._id})
+    const newUser = new User({
+      uid: userRecord.uid,
+      role: 'admin', 
+      email: `admin@gmail.com`,
+      name: 'Admin',
+      identity: '170200945',
+      address: 'Hà Nội',
+      phone: '0968123456',
+      status: 'APPROVED'})
     await newUser.save()
     console.log('Created admin')
   })
@@ -60,22 +65,20 @@ for (let i = 0; i < 3; i += 1) {
       password: '123456',
     })
     .then(async (userRecord) => {
-      const newOwner = new Owner({
+      const newUser = new User({
+        uid: userRecord.uid,
+        role: 'owner', 
         email: `owner${i + 1}@gmail.com`,
         name: faker.name.findName(),
         identity: faker.finance.creditCardNumber(),
         address: faker.address.streetAddress(),
         phone: '0968123456',
-        status: 'APPROVED',
-      })
-      await newOwner.save()
-
-      const newUser = new User({roles: ['owner'], _id: userRecord.uid, owner: newOwner._id, status: 'APPROVED'})
+        status: 'APPROVED'})
       await newUser.save()
 
       for (let j = 0; j < 32; j += 1) {
         const newRoom = new Room({
-          owner: newOwner._id,
+          user: newUser._id,
           roomType: roomTypes[j % 4],
           name: faker.name.findName(),
           description: `Một căn phòng tràn ngập ánh nắng, cây và sách. Vô cùng thoáng đãng và thoải mái. Bạn có thể ngắm hoàng hôn tím lịm phía chân trời, giữa những tòa nhà, nghe tiếng rao văng vẳng của những người bán dạo. Đúng chất Hà Nội, San's Homestay nằm trong một khu chung cư cũ nhưng căn hộ được tự tay San chăm bẵm, trang trí. Bạn có thể tìm thấy nhiều điều thú vị xung quanh khu nhà.
@@ -112,7 +115,7 @@ for (let i = 0; i < 3; i += 1) {
       }
     })
     .catch((error) => {
-      console.log('Error creating new user:', error)
+      console.log('Error creating room:', error)
     })
 }
 
@@ -124,19 +127,26 @@ for (let i = 3; i < 6; i += 1) {
       password: '123456',
     })
     .then(async (userRecord) => {
-      const newOwner = new Owner({
+      // const newOwner = new Owner({
+      //   email: `owner${i + 1}@gmail.com`,
+      //   name: faker.name.findName(),
+      //   identity: faker.finance.creditCardNumber(),
+      //   address: faker.address.streetAddress(),
+      //   phone: '0968123456',
+      //   status: 'PENDING',
+      // })
+      // await newOwner.save()
+
+      const newUser = new User({
+        uid: userRecord.uid,
+        role: 'owner', 
         email: `owner${i + 1}@gmail.com`,
         name: faker.name.findName(),
         identity: faker.finance.creditCardNumber(),
         address: faker.address.streetAddress(),
         phone: '0968123456',
-        status: 'PENDING',
-      })
-      await newOwner.save()
-
-      const newUser = new User({roles: ['owner'], _id: userRecord.uid, owner: newOwner._id, status: 'PENDING'})
+        status: 'PENDING',})
       await newUser.save()
-      console.log(newOwner)
     })
     .catch((error) => {
       console.log('Error creating new user:', error)

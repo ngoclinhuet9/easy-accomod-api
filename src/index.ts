@@ -7,7 +7,7 @@ import bodyParser from 'body-parser'
 import hpp from 'hpp'
 import mongoose from 'mongoose'
 
-import {checkAuth, checkAdmin, getUID, checkAuthOrNot} from './middlewares/authentication'
+import {checkAuth, checkAdmin, getUID, checkAuthOrNot, checkRole} from './middlewares/authentication'
 
 import * as ownerController from './controllers/owner'
 import * as userController from './controllers/user'
@@ -37,7 +37,7 @@ mongoose
 
 const app = express()
 
-var allowlist = ['http://localhost:3000', 'http://owner.localhost:3000', 'http://admin.localhost:3000']
+var allowlist = ['http://localhost:3000', 'http://localhost:7002', 'http://room-management.local:3000','http://room-management.local:8000', 'https://sandbox.vnpayment.vn']
 var corsOptionsDelegate = function (req: any, callback: any) {
   var corsOptions;
   if (allowlist.indexOf(req.header('Origin')) !== -1) {
@@ -58,13 +58,18 @@ app.use(hpp())
 /**
  * user api
  */
+app.post('/api/user/create', getUID, userController.createUser)
+app.get('/api/profileuser', checkAuthOrNot, userController.getProfileUser)
 app.get('/api/profile', checkAuth, userController.getProfile)
+app.get('/api/role', checkRole, userController.getRole)
 
 /**
  * renter api
  */
 app.post('/api/renters/create', getUID, renterController.createRenter)
 app.get('/api/renters', checkAuth, renterController.getAllRenter)
+app.put('/api/renters/update', checkAuth, renterController.updateRenterInfo)
+app.get('/api/renters/history', checkAuth, renterController.getHistory)
 
 /**
  * owner api
@@ -104,6 +109,9 @@ app.get('/api/rooms', roomController.getRooms)
 app.put('/api/rooms/:room_id/approve', checkAuth, roomController.approveRoom) // admin
 app.put('/api/rooms/:room_id/reject', checkAuth, roomController.rejectRoom) // admin
 app.post('/api/rooms/:room_id/booking', checkAuth, roomController.bookingRoom) //renter
+app.post('/api/payment', checkAuth, roomController.handlePayment)
+app.get('/api/returnURL', checkAuthOrNot, roomController.getReturnURL)
+app.get('/api/vnpay_ipn', checkAuthOrNot, roomController.getIPN)
 
 /**
  * review api
@@ -122,3 +130,6 @@ app.get('/api/bookmarks', checkAuth, bookmarkController.getAllBookmarks) // rent
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`)
 })
+
+
+//https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=10000000&vnp_Command=pay&vnp_CreateDate=20230416152011&vnp_CurrCode=VND&vnp_IpAddr=%3A%3A1&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+cho+ma+GD%3A16152011&vnp_OrderType=other&vnp_ReturnUrl=http%3A%2F%2Froom-management.local%3A3000&vnp_TmnCode=GJKNDUTB&vnp_TxnRef=16152011&vnp_Version=2.1.0&vnp_SecureHash=fcdd5ba861d25360828b7bbac9918a8462a6590df26c59e06c1dca0b4a136edfcf8923ed9ead261b62c00ba8a5bba19be0a1bc9ed535f2e92169489427894009

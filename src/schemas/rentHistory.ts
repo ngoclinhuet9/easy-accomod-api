@@ -2,10 +2,10 @@ import {Schema, Document, Date} from 'mongoose'
 
 export interface RentHistoryDocument extends Document {
   room?: Schema.Types.ObjectId
-  renter?: Schema.Types.ObjectId
-  owner?: Schema.Types.ObjectId
+  user?: Schema.Types.ObjectId
   startDate: Date
   endDate: Date
+  rentFlag: String
   createDate: Date
 }
 
@@ -15,15 +15,10 @@ const RentHistorySchema: Schema = new Schema({
     required: true,
     ref: 'Room',
   },
-  renter: {
+  user: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: 'Renter',
-  },
-  owner: {
-    type: Schema.Types.ObjectId,
-    required: true,
-    ref: 'Room',
+    ref: 'User',
   },
   startDate: {
     type: String,
@@ -35,8 +30,12 @@ const RentHistorySchema: Schema = new Schema({
     required: true,
     ref: 'End Date'
   },
-  createDate: {
+  rentFlag: {
     type: String,
+    required: false
+  },
+  createDate: {
+    type: Date,
     required: true,
     ref: 'Create Date'
   }

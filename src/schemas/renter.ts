@@ -3,6 +3,7 @@ import {Schema, Document} from 'mongoose'
 export interface RenterDocument extends Document {
   email: string
   name: string
+  phone: string
   isActive: boolean
 }
 
