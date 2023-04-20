@@ -4,8 +4,9 @@ export interface RentHistoryDocument extends Document {
   room?: Schema.Types.ObjectId
   user?: Schema.Types.ObjectId
   startDate: Date
-  endDate: Date
-  rentFlag: String
+  endPlanDate: Date
+  endActualtDate: Date
+  requestType: Number
   createDate: Date
 }
 
@@ -20,24 +21,25 @@ const RentHistorySchema: Schema = new Schema({
     required: true,
     ref: 'User',
   },
-  startDate: {
+  startPlanDate: {
     type: String,
     required: true,
-    ref: 'Start Date',
   },
-  endDate: {
+  endPlanDate: {
     type: String,
     required: true,
-    ref: 'End Date'
   },
-  rentFlag: {
+  endActualtDate: {
     type: String,
-    required: false
+    required: false,
+  },
+  requestType: {
+    type: Date,
+    required: true,
   },
   createDate: {
     type: Date,
     required: true,
-    ref: 'Create Date'
   }
 })
 

@@ -9,7 +9,7 @@ import {log} from "util";
 
 export const createRoom: MiddlewareFn = async (req, res, next) => {
   try {
-    const {user_id} = req.user
+    const user_id= req.user._id
     const newRoom = new Room({user: user_id, ...req.body})
     await newRoom.save()
     await newRoom.populate('user')
@@ -33,16 +33,16 @@ export const getRooms: MiddlewareFn = async (req, res, next) => {
     let rooms: any[] = []
 
     if (!city && roomType) {
-      rooms = await Room.find({roomType, roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED'})
+      rooms = await Room.find({roomType, roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED', isRent: false})
     } 
     else if (!roomType && city) {
-      rooms = await Room.find({city, roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED'})
+      rooms = await Room.find({city, roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED', isRent: false})
     }
     else if (!roomType && !city) {
-      rooms = await Room.find({roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED'})
+      rooms = await Room.find({roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED', isRent: false})
     }
     else {
-      rooms = await Room.find({city, roomType, roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED'})
+      rooms = await Room.find({city, roomType, roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED', isRent: false})
     }
     
 
@@ -223,17 +223,17 @@ export const bookingRoom: MiddlewareFn = async (req, res, next) => {
     const {room_id} = req.params
     const user_id = req.user._id
     const room = await Room.findOne({_id: room_id})
-    const newRentRoom = new renterRoom({user: user_id, room: room_id, startDate: startDate, endDate: endDate, payFlag: false})
+    const newRentRoom = new renterRoom({user: user_id, room: room_id, startDate: startDate, endPlanDate: endDate,
+       payFlag: false, requestType: 0, status: 1})
     if (room?.isRent === true || room?.status != 'APPROVED') {
       return res.status(400).json({
         success: false,
         error: 'Not allow to edit room info',
       })
     }
-
     if (room?.isRent === false && room?.status === 'APPROVED') {
-      //await room.update({ isRent: true })
-      //await Room.findOneAndUpdate({_id: room_id}, {...room} )
+      await room.update({ isRent: true })
+      
       newRentRoom.save()
       return res.status(200).json({
         success: true,
@@ -260,7 +260,7 @@ export const handlePayment: MiddlewareFn = async (req, res, next) => {
     let secretKey = config.secretKey 
     let vnpUrl = config.vnpUrl
   
-    let returnUrl = "http://localhost:7002/order/vnpay_return"
+    let returnUrl = "http://localhost:7002/renter/payment_VN_pay"
 
     let date = new Date();
     let createDate = moment(date).format('YYYYMMDDHHmmss')
@@ -285,7 +285,8 @@ export const handlePayment: MiddlewareFn = async (req, res, next) => {
     // let returnUrl = config.get('vnp_ReturnUrl');
     let orderId = moment(date).format('DDHHmmss');
     //let amount = req.body.amount;
-    let amount = 100000
+    let amount = req.body.amount;
+    
     let bankCode = 'NCB'
     //let bankCode = req.body.bankCode;
     
@@ -352,7 +353,6 @@ export const getReturnURL: MiddlewareFn = async (req, res, next) => {
     vnp_Params = sortObject(vnp_Params);
     
     let config = require('../config/serviceAccountKey.json')
-    let tmnCode = config.tmnCode
     let secretKey = config.secretKey 
 
     let querystring = require('qs');

@@ -62,7 +62,8 @@ export const getDashboardRentedRate: MiddlewareFn = async (req, res, next) => {
         $match : {
           createDate: {
             $gte: dateCompare
-          }
+          },
+          requestType: 1,
         }
       },
       {$group : {_id:{$dateToString: {format: "%Y-%m-%d", date: "$createDate"}}, count:{$sum:1}}},

@@ -4,8 +4,12 @@ export interface RenterRoomDocument extends Document {
   room?: Schema.Types.ObjectId
   user?: Schema.Types.ObjectId
   startDate: Date
-  endDate: Date
+  endPlanDate: Date
+  endActualtDate: Date
+  requestType: Number  //0: Thuê phòng, 1: trả phòng
+  status: Number       //0: approved, 1: pending
   payFlag: boolean
+  createDate: Date
 }
 
 const RenterRoomSchema: Schema = new Schema({
@@ -22,18 +26,33 @@ const RenterRoomSchema: Schema = new Schema({
   startDate: {
     type: String,
     required: true,
-    ref: 'Start Date',
   },
-  endDate: {
+  endPlanDate: {
     type: String,
     required: true,
-    ref: 'End Date'
+  },
+  endActualtDate: {
+    type: String,
+    required: false,
+  },
+  requestType: {
+    type: String,
+    required: true,
+  },
+  status: {
+    type: Number,
+    required: true,
+    enum: [0,1]
   },
   payFlag: {
     type: Boolean,
     required: false,
     enum: [true, false],
     default: false,
+  },
+  createDate: {
+    type: Date,
+    required: false,
   }
 })
 

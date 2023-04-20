@@ -4,6 +4,10 @@ import User from '../models/user'
 
 export const checkRole: MiddlewareFn = async (req, res, next) => {
   let token = req.headers.authorization
+  let ipAddr = req.headers['x-forwarded-for'] ||
+        req.connection.remoteAddress ||
+        req.socket.remoteAddress ||
+        req.connection.socket.remoteAddress;
   if (token) {
     admin
       .auth()

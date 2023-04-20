@@ -52,8 +52,6 @@ export const createOwner: MiddlewareFn = async (req, res, next) => {
 export const getPendingOwners: MiddlewareFn = async (req, res, next) => {
   try {
     const owners = await User.find({status: 'PENDING', role: 'owner'})
-    console.log(owners);
-    
     if (owners) {
       return res.status(200).json({
         success: true,
@@ -253,7 +251,6 @@ export const getRentRoomsById: MiddlewareFn = async (req, res, next) => {
     const {renterRoomId} = req.params;
     const renterRooms = await RenterRoom.findOne({_id: renterRoomId}).populate('room').populate('user')
     const reviews = await Review.find({room: renterRooms?.room}).populate('user')
-    console.log(reviews,'tesst');
     
     return res.status(200).json({
       success: true,
@@ -296,20 +293,19 @@ export const getReadyRooms: MiddlewareFn = async (req, res, next) => {
 
 export const handleRentRoom: MiddlewareFn = async (req, res, next) => {
   try {
-    let currentDate = new Date()
-    const {user_id} = req.user
+    //let currentDate = new Date()
     const renterRoom_id = req.params.room_id
     const renterRooms = await RenterRoom.findOne({_id: renterRoom_id})
     const room = await Room.findOne({_id: renterRooms?.room})
-    const newRentHistory = new RentHistory({user: renterRooms?.user, room: room?.id, 
-      startDate: renterRooms?.startDate, endDate: renterRooms?.endDate, createDate: currentDate})
+    // const newRentHistory = new RentHistory({user: renterRooms?.user, room: room?.id, startDate: renterRooms?.startDate, 
+    //   endPlanDate: renterRooms?.endPlanDate, createDate: currentDate, requestType: 1})
     if (renterRooms) {
-      await renterRooms.update({payFlag: true})
-      await room?.update({isRent: true, countRent: room?.countRent + 1})
-      await newRentHistory.save()
+      await renterRooms.update({payFlag: true, status: 0})
+      await room?.update({ countRent: room?.countRent + 1})
+      //await newRentHistory.save()
       return res.status(200).json({
         success: true,
-        data: {renterRooms, newRentHistory}
+        data: renterRooms//, newRentHistory
       })
     }
     return res.status(403).json({
@@ -327,13 +323,12 @@ export const handleRentRoom: MiddlewareFn = async (req, res, next) => {
 
 export const handleReturnRoom: MiddlewareFn = async (req, res, next) => {
   try {
-    const {user_id} = req.user
-    const renterRoom_id = req.params.room_id
+    const renterRoom_id = req.params.renterRoom_id
     const renterRooms = await RenterRoom.findOne({_id: renterRoom_id})
     const room = await Room.findOne({_id: renterRooms?.room})
     if (room) {
-      //await room.update({isRent: false, status: 'APPROVED'})
       await RenterRoom.deleteOne({_id: renterRoom_id})
+      await room.update({isRent: false})
       return res.status(200).json({
         success: true,
         data: room,

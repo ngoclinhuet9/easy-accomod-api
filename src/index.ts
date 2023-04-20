@@ -61,15 +61,17 @@ app.use(hpp())
 app.post('/api/user/create', getUID, userController.createUser)
 app.get('/api/profileuser', checkAuthOrNot, userController.getProfileUser)
 app.get('/api/profile', checkAuth, userController.getProfile)
-app.get('/api/role', checkRole, userController.getRole)
-
+app.put('/api/updateuser', checkAuth, userController.updateUserInfo)
+app.put('/api/updatetoken', checkAuthOrNot, userController.updateToken)
 /**
  * renter api
  */
 app.post('/api/renters/create', getUID, renterController.createRenter)
 app.get('/api/renters', checkAuth, renterController.getAllRenter)
-app.put('/api/renters/update', checkAuth, renterController.updateRenterInfo)
+//app.put('/api/renters/update', checkAuth, renterController.updateRenterInfo)
 app.get('/api/renters/history', checkAuth, renterController.getHistory)
+app.get('/api/renters/renting', checkAuth, renterController.getRenting)
+app.put('/api/renters/rentByPay', checkAuthOrNot, renterController.handleRentByPay)
 
 /**
  * owner api

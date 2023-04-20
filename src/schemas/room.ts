@@ -21,6 +21,7 @@ export interface RoomDocument extends Document {
   hasWardrobe: boolean
   roomPrice: number
   waterPrice: number
+  amount: number
   electricityPrice: number
   rule?: string
   images: [string]
@@ -132,6 +133,11 @@ const RoomSchema: Schema = new Schema({
     type: Number,
     min: [0, 'room price is in valid'],
     required: [true, 'roomPrice is required'],
+  },
+  amount: {
+    type: Number,
+    min: [0, 'amount is in valid'],
+    required: [false, 'roomPrice is required'],
   },
   waterPrice: {
     type: Number,
