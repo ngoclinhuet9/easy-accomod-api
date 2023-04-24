@@ -72,6 +72,7 @@ app.get('/api/renters', checkAuth, renterController.getAllRenter)
 app.get('/api/renters/history', checkAuth, renterController.getHistory)
 app.get('/api/renters/renting', checkAuth, renterController.getRenting)
 app.put('/api/renters/rentByPay', checkAuthOrNot, renterController.handleRentByPay)
+app.put('/api/renters/:room_id/returnRoom', checkAuth, roomController.returnRoom) //renter
 
 /**
  * owner api
@@ -88,7 +89,7 @@ app.get('/api/owner/rooms/rejected', checkAuth, ownerController.getRejectedRooms
 app.get('/api/owner/rooms/ready', checkAuth, ownerController.getReadyRooms)
 app.get('/api/owner/rooms/rent', checkAuth, ownerController.getRentRooms)
 app.get('/api/owner/rooms/rent/:renterRoomId', checkAuth, ownerController.getRentRoomsById)
-app.put('/api/owner/rooms/:room_id/rent', checkAuth, ownerController.handleRentRoom)
+app.put('/api/owner/rooms/:renterRoom_id/accept', checkAuth, ownerController.handleAcceptRoom)
 app.put('/api/owner/rooms/:renterRoom_id/return', checkAuth, ownerController.handleReturnRoom)
 app.delete('/api/owner/rooms/:room_id/delete', checkAuth, ownerController.handleDeleteRoom)
 /**
@@ -97,6 +98,7 @@ app.delete('/api/owner/rooms/:room_id/delete', checkAuth, ownerController.handle
 app.post('/api/admins/create', getUID, adminController.createAdmin)
 app.get('/api/admin/getDashboadRoom', checkAuth, adminController.getDashboardRoom)
 app.get('/api/admin/getDashBoardRentRate', checkAuth, adminController.getDashboardRentedRate)
+app.get('/api/admin/getDashBoardUserView', checkAuth, adminController.getDashboardUserView)
 
 /**
  * room api
@@ -112,9 +114,6 @@ app.put('/api/rooms/:room_id/approve', checkAuth, roomController.approveRoom) //
 app.put('/api/rooms/:room_id/reject', checkAuth, roomController.rejectRoom) // admin
 app.post('/api/rooms/:room_id/booking', checkAuth, roomController.bookingRoom) //renter
 app.post('/api/payment', checkAuth, roomController.handlePayment)
-app.get('/api/returnURL', checkAuthOrNot, roomController.getReturnURL)
-app.get('/api/vnpay_ipn', checkAuthOrNot, roomController.getIPN)
-
 /**
  * review api
  */

@@ -1,5 +1,6 @@
 import User from '../models/user'
 import Room from '../models/room'
+import Token from '../models/token'
 import RentHistory from '../models/rentHistory'
 import {MiddlewareFn} from '../types/express.d'
 
@@ -72,6 +73,24 @@ export const getDashboardRentedRate: MiddlewareFn = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       data: rentedHistory
+    })
+  } catch (error) {
+    console.log(error)
+    return res.status(400).json({
+      success: false,
+      error: 'get data failed',
+    })
+  }
+}
+export const getDashboardUserView: MiddlewareFn = async (req, res, next) => {
+  try {
+    const user = await Token.find({role: 'user'}).count()
+    const renter = await Token.find({role: 'renter'}).count()
+    const owner = await Token.find({role: 'owner'}).count()
+    const admin = await Token.find({role: 'admin'}).count()
+    return res.status(200).json({
+      success: true,
+      data: {user, renter, owner, admin}
     })
   } catch (error) {
     console.log(error)

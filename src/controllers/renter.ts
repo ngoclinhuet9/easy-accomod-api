@@ -17,8 +17,6 @@ export const createRenter: MiddlewareFn = async (req, res, next) => {
     }: {email: string; identity: string; name: string; address: string; phone: string} = req.body
     const _id = req.user.uid
     
-    // const newRenter = new Renter({email, name, phone})
-    // await newRenter.save()
 
     const newUser = new User({roles: ['renter'], _id, email, identity, name, address, phone})
     await newUser.save()
@@ -71,15 +69,17 @@ export const getHistory: MiddlewareFn = async (req, res, next) => {
   try {
     const user_id = req.user._id
     const historyRooms: any[] = [];
-    (await RentHistory.find({user: user_id, requestType: 1})).forEach((room: any) => {
+    (await RentHistory.find({user: user_id, requestType: '1'})).forEach((room: any) => {
       historyRooms.push(room._id)
     })
-    const rooms = await Room.find({
-      _id: {$exists: true, $in: historyRooms}
-    }).populate('user')
+    const rentHistories = await RentHistory.find({user: user_id, requestType: '1'})
+    .populate({
+        path: 'room',
+        populate: {path: 'user'}
+      })
     return res.status(200).json({
       success: true,
-      data: rooms,
+      data: rentHistories,
     })
   } catch (error) {
     console.log(error)
@@ -95,8 +95,8 @@ export const getRenting: MiddlewareFn = async (req, res, next) => {
   try {
     const user_id = req.user._id
     const renterRooms: any[] = [];
-    const renting = await RenterRoom.find({user: user_id,
-      $or:[{requestType: 1, status: 1},{requestType: 0}]}).populate({
+    const renting = await RenterRoom.find({user: user_id})//,$or:[{requestType: '1', status: 1},{requestType: '0'}]})
+    .populate({
         path: 'room',
         populate: {path: 'user'}
       })
@@ -122,11 +122,35 @@ export const getRenting: MiddlewareFn = async (req, res, next) => {
 
 export const handleRentByPay: MiddlewareFn = async (req, res, next) => {
   try {
-    let {vnp_Params} = req.query
-    console.log(vnp_Params, "linh check log")
-    return res.status(403).json({
+    let {vnp_Params} = req.body.vnp_Param
+    const user_id = req.user._id
+    const room_id = req.body.room_id
+    const room = await Room.findOne({_id: room_id})
+    const renterRooms = await RenterRoom.find({room: room?._id})
+    const newRentRoom = new RenterRoom({user: user_id, room: room_id, startDate: req.body.startDate, endPlanDate: req.body.endDate,
+      payFlag: true, requestType: 0, status: 0})
+    if(room?.isRent === false && !renterRooms){
+      await room.updateOne({isRent: true})
+      await newRentRoom.save()
+      return res.status(200).json({
+        success: true,
+        data: room,newRentRoom,
+      })
+      // await Order.insertMany( { renterRoom: newRentRoom._id, amount: vnp_Params.amount, orderInfor: vnp_Params.orderInfor,
+      //      transactionNo: vnp_Params.transactionNo, responseCode: vnp_Params.responseCode, transactionStatus: vnp_Params.transactionStatus, payDate: vnp_Params.payDate } );
+    }
+    if(renterRooms){
+      return res.status(204).json({
+      })
+      // await Order.insertMany( { renterRoom: newRentRoom._id, amount: vnp_Params.amount, orderInfor: vnp_Params.orderInfor,
+      //      transactionNo: vnp_Params.transactionNo, responseCode: vnp_Params.responseCode, transactionStatus: vnp_Params.transactionStatus, payDate: vnp_Params.payDate } );
+    }
+    // const newOder = new Order({renterRoom: newRentRoom._id, amount: vnp_Params.amount, orderInfor: vnp_Params.orderInfor,
+    //   transactionNo: vnp_Params.transactionNo, responseCode: vnp_Params.responseCode, transactionStatus: vnp_Params.transactionStatus, payDate: vnp_Params.payDate})
+    // await newOder.save()
+    return res.status(400).json({
       success: false,
-      error: 'Not allow to update',
+      error: 'Phòng đã được thuê',
     })
   } catch (error) {
     console.log(error)

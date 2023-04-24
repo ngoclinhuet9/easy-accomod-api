@@ -6,7 +6,7 @@ export interface RenterRoomDocument extends Document {
   startDate: Date
   endPlanDate: Date
   endActualtDate: Date
-  requestType: Number  //0: Thuê phòng, 1: trả phòng
+  requestType: String  //0: Thuê phòng, 1: trả phòng
   status: Number       //0: approved, 1: pending
   payFlag: boolean
   createDate: Date

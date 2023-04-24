@@ -7,6 +7,7 @@ import Review from '../models/review'
 import RentHistory from '../models/rentHistory'
 import {MiddlewareFn} from '../types/express.d'
 import { ALL } from 'dns'
+import { isNull } from 'util'
 
 export const createOwner: MiddlewareFn = async (req, res, next) => {
   try {
@@ -70,12 +71,6 @@ export const getPendingOwners: MiddlewareFn = async (req, res, next) => {
 export const getApprovedOwners: MiddlewareFn = async (req, res, next) => {
   try {
     const owners = await User.find({status: 'APPROVED', role: 'owner'})
-      // .populate({
-      //   path: 'owner',
-      //   // select: '-_id',
-      //   model: 'Owner',
-      //   match: {status: 'APPROVED'},
-      // })
       .exec()
     if (owners) {
       return res.status(200).json({
@@ -291,21 +286,32 @@ export const getReadyRooms: MiddlewareFn = async (req, res, next) => {
   }
 }
 
-export const handleRentRoom: MiddlewareFn = async (req, res, next) => {
+export const handleAcceptRoom: MiddlewareFn = async (req, res, next) => {
   try {
-    //let currentDate = new Date()
-    const renterRoom_id = req.params.room_id
+    let currentDate = new Date()
+    const renterRoom_id = req.params.renterRoom_id
     const renterRooms = await RenterRoom.findOne({_id: renterRoom_id})
     const room = await Room.findOne({_id: renterRooms?.room})
-    // const newRentHistory = new RentHistory({user: renterRooms?.user, room: room?.id, startDate: renterRooms?.startDate, 
-    //   endPlanDate: renterRooms?.endPlanDate, createDate: currentDate, requestType: 1})
-    if (renterRooms) {
+    if (renterRooms?.requestType === '0' && renterRooms?.status === 1) {
+      console.log('vô đây');
       await renterRooms.update({payFlag: true, status: 0})
       await room?.update({ countRent: room?.countRent + 1})
-      //await newRentHistory.save()
       return res.status(200).json({
         success: true,
-        data: renterRooms//, newRentHistory
+        data: renterRooms
+      })
+    }
+    if (renterRooms?.requestType === '1' && renterRooms?.status === 1) {
+      console.log('hay vô dây');
+      
+      await room?.updateOne({ isRent: false})
+      const newRentHistory = new RentHistory({user: renterRooms?.user, room: room?.id, startDate: renterRooms?.startDate, 
+      endPlanDate: renterRooms?.endPlanDate, createDate: currentDate, requestType: 1})
+      await newRentHistory.save()
+      await RenterRoom.deleteOne({_id: renterRoom_id})
+      return res.status(200).json({
+        success: true,
+        data: renterRooms, newRentHistory
       })
     }
     return res.status(403).json({
@@ -326,9 +332,17 @@ export const handleReturnRoom: MiddlewareFn = async (req, res, next) => {
     const renterRoom_id = req.params.renterRoom_id
     const renterRooms = await RenterRoom.findOne({_id: renterRoom_id})
     const room = await Room.findOne({_id: renterRooms?.room})
-    if (room) {
+    if (renterRooms?.requestType === '0' && renterRooms?.status === 1) {
       await RenterRoom.deleteOne({_id: renterRoom_id})
-      await room.update({isRent: false})
+      await room?.updateOne({isRent: false})
+      return res.status(200).json({
+        success: true,
+        data: room,
+      })
+    }
+    if (renterRooms?.requestType === '1' && renterRooms?.status === 1) {
+      await renterRooms.updateOne({requestType: '0', status: 0})
+      await room?.updateOne({isRent: false})
       return res.status(200).json({
         success: true,
         data: room,

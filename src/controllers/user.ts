@@ -141,23 +141,27 @@ export const updateToken: MiddlewareFn = async (req, res, next) => {
       _id: {$exists: true, $in: token_array}})
       if(token){
         const user = await User.findOne({_id: user_id})
-        if(unTokens.length){
-          console.log('vô đây');
-          await _lasttoken?.updateOne({token: token, createDate: new Date(),user: user_id, role: user?.role})
+        if(_lasttoken){
+          await _lasttoken.updateOne({token: token, createDate: new Date(),user: user_id, role: user?.role})
+          console.log(_lasttoken,'vô đây');
+          return res.status(200).json({
+            success: true,
+            data: _lasttoken,
+          })
         }
         else{
-          console.log('vô đây chứ');
-          
           const newToken = new Token({token: token, createDate: new Date(), user: user_id, role: user?.role, IP: ipAddr})
+          console.log('vô đây chứ');
           await newToken.save()
-        }
-        return res.status(200).json({
-          success: true,
-          data: token,
-        })
-      }
+          return res.status(200).json({
+            success: true,
+            data: newToken,
+          })
+        }}
       if(token == null && unTokens.length){
-        //await unTokens.update({createDate: new Date()})
+        console.log('hay là vô đây');
+        
+        //await unTokens.updateOne({createDate: new Date()})
         return res.status(200).json({
           success: true,
           data: unTokens,
@@ -166,6 +170,8 @@ export const updateToken: MiddlewareFn = async (req, res, next) => {
       if(token == null && !unTokens.length){
         const newToken = new Token({token: 'Unauthorized', createDate: new Date(), role: 'user', IP: ipAddr})
         await newToken.save()
+        console.log(newToken,'vô đây mà k vô chỗ khác');
+        
         return res.status(200).json({
           success: true,
           data: newToken,

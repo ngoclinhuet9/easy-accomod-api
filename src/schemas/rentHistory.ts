@@ -6,7 +6,7 @@ export interface RentHistoryDocument extends Document {
   startDate: Date
   endPlanDate: Date
   endActualtDate: Date
-  requestType: Number
+  requestType: String
   createDate: Date
 }
 
@@ -21,7 +21,7 @@ const RentHistorySchema: Schema = new Schema({
     required: true,
     ref: 'User',
   },
-  startPlanDate: {
+  startDate: {
     type: String,
     required: true,
   },
@@ -34,7 +34,7 @@ const RentHistorySchema: Schema = new Schema({
     required: false,
   },
   requestType: {
-    type: Date,
+    type: String,
     required: true,
   },
   createDate: {
