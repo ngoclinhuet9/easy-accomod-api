@@ -6,6 +6,7 @@ export interface ReviewDocument extends Document {
   content: string
   rating?: number
   status: string
+  type: number //1: review, 0: comment
 }
 
 const ReviewSchema: Schema = new Schema({
@@ -33,6 +34,12 @@ const ReviewSchema: Schema = new Schema({
     required: true,
     enum: ['APPROVED', 'REJECTED', 'PENDING'],
     default: 'APPROVED',
+  },
+  type: {
+    type: Number,
+    required: true,
+    enum: [0,1],
+    default: 0,
   },
 })
 

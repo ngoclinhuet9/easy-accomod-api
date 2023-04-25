@@ -306,7 +306,7 @@ export const handleAcceptRoom: MiddlewareFn = async (req, res, next) => {
       
       await room?.updateOne({ isRent: false})
       const newRentHistory = new RentHistory({user: renterRooms?.user, room: room?.id, startDate: renterRooms?.startDate, 
-      endPlanDate: renterRooms?.endPlanDate, createDate: currentDate, requestType: 1})
+      endPlanDate: renterRooms?.endPlanDate, createDate: currentDate, requestType: 1, reviewed: renterRooms?.reviewed})
       await newRentHistory.save()
       await RenterRoom.deleteOne({_id: renterRoom_id})
       return res.status(200).json({

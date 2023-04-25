@@ -8,6 +8,7 @@ export interface RentHistoryDocument extends Document {
   endActualtDate: Date
   requestType: String
   createDate: Date
+  reviewed: boolean
 }
 
 const RentHistorySchema: Schema = new Schema({
@@ -39,6 +40,10 @@ const RentHistorySchema: Schema = new Schema({
   },
   createDate: {
     type: Date,
+    required: true,
+  },
+  reviewed: {
+    type: Boolean,
     required: true,
   }
 })

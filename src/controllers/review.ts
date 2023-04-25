@@ -1,22 +1,60 @@
 import Review from '../models/review'
+import Room from '../models/room'
+import RentHistory from '../models/rentHistory'
+import RenterRoom from '../models/renterRoom'
 import {MiddlewareFn} from '../types/express.d'
 
 export const createReview: MiddlewareFn = async (req, res, next) => {
   try {
     const user_id = req.user._id
-    const {content, rating, roomId}: {content: string; rating: number; roomId: string} = req.body
+    const room_id = req.body.roomId
+    const renterRoom = await RenterRoom.findOne({room: room_id,user: user_id, reviewed: false})
+    const rentHistory = await RentHistory.findOne({room: room_id,user: user_id, reviewed: false})
+    const {content, rating, roomId, type}: {content: string; rating: number; roomId: any, type:number} = req.body
     const newReview = new Review({
       user: user_id,
       room: roomId,
       content,
       rating,
+      type
     })
     await newReview.save()
+    const reviews = await Review
+    .aggregate([
+      {
+        $match:
+        {
+          type:1
+        }
+      },
+      {
+        $group:
+        {
+          _id: '$room',
+          avgRate: { $avg: "$rating" }
+        }
+      }
+    ])
+    let avgRating= new String
+    reviews.forEach((item: any) => {
+      if(String(item._id) === room_id){
+        avgRating = String(item.avgRate.toFixed(1))
+      }
+    })
+   const rooms = await Room.findOne({_id: room_id})
+   if(rooms){
+    await rooms.update({rating: avgRating})
+   }
+    if(type === 1){
+      console.log(renterRoom,rentHistory,'iiiiiiiiiiii');
+      if(renterRoom){await renterRoom.update({reviewed: true})}
+      if(rentHistory){await rentHistory.update({reviewed: true})}
+    }
     return res.status(200).json({
       success: true,
-      data: {
+      data: {rooms,
         renter: user_id,
-        room: roomId,
+        room: roomId, 
         content,
         rating,
       },

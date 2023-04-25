@@ -31,6 +31,7 @@ export interface RoomDocument extends Document {
   views: number
   isRent: boolean
   countRent: number
+  rating: String
   status: string
   isActive: boolean
 }
@@ -192,6 +193,11 @@ const RoomSchema: Schema = new Schema({
   countRent: {
     type: Number,
     required: [true, 'isRent is required'],
+    default: 0,
+  },
+  rating: {
+    type: String,
+    required: [true, 'rating is required'],
     default: 0,
   },
   status: {

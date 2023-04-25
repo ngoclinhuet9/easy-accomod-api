@@ -131,7 +131,7 @@ export const updateToken: MiddlewareFn = async (req, res, next) => {
         { $sort: { createDate: -1 }},
         {$limit: 1}
       ])
-      console.log(unTokens,'linh test');
+      console.log(unTokens,'linh testb');
       
       const token_array: any[] = [];
     unTokens.forEach((token: any) => {

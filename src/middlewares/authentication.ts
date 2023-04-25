@@ -77,14 +77,13 @@ export const checkAuth: MiddlewareFn = async (req, res, next) => {
 export const checkAuthOrNot: MiddlewareFn = async (req, res, next) => {
   let token = req.headers.authorization
   let req_role = req.headers.role
-
   if (token) {
     admin
       .auth()
       .verifyIdToken(token)
       .then(async (decodedToken) => {
         try {
-          const user = await User.findOne({uid: decodedToken.uid, role: req_role})
+          const user = await User.findOne({uid: decodedToken.uid})
           req.user = user
           next()
           // if (schema?.role.includes(req_role)) {

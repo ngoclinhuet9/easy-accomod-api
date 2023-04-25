@@ -1,6 +1,7 @@
 import Room from '../models/room'
 import User from '../models/user'
 import renterRoom from '../models/renterRoom'
+import RentHistory from '../models/rentHistory'
 import Bookmark from '../models/bookmark'
 import Review from '../models/review'
 import {MiddlewareFn} from '../types/express'
@@ -35,15 +36,55 @@ export const getRooms: MiddlewareFn = async (req, res, next) => {
 
     if (!city && roomType) {
       rooms = await Room.find({roomType, roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED', isRent: false})
+      .populate({
+        path: 'review',
+        aggregate: {
+          $group:
+         {
+           _id: "$room",
+           avgRate: { $avg: "$rating" }
+         }
+        }
+      })
     } 
     else if (!roomType && city) {
       rooms = await Room.find({city, roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED', isRent: false})
+      .populate({
+        path: 'review',
+        aggregate: {
+          $group:
+         {
+           _id: "$room",
+           avgRate: { $avg: "$rating" }
+         }
+        }
+      })
     }
     else if (!roomType && !city) {
       rooms = await Room.find({roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED', isRent: false})
+      .populate({
+        path: 'review',
+        aggregate: {
+          $group:
+         {
+           _id: "$room",
+           avgRate: { $avg: "$rating" }
+         }
+        }
+      })
     }
     else {
       rooms = await Room.find({city, roomType, roomPrice: {$gte: minPrice || 0, $lte: maxPrice || 100000000} ,status: 'APPROVED', isRent: false})
+      .populate({
+        path: 'review',
+        aggregate: {
+          $group:
+         {
+           _id: "$room",
+           avgRate: { $avg: "$rating" }
+         }
+        }
+      })
     }
     
 
@@ -60,26 +101,28 @@ export const getRoomDetail: MiddlewareFn = async (req, res, next) => {
   try {
     const {room_id} = req.params
     const room = await Room.findOne({_id: room_id}).populate('user')
-    const reviews = await Review.find({room: room_id}).populate('user')
+    const reviews = await Review.find({room: room_id, type: 1}).populate('user')
+    const comments = await Review.find({room: room_id, type: 0}).populate('user')
     const user_id = req.user._id
-    const renterRooms = await renterRoom.findOne({room: room_id, user: user_id})
     if (user_id !== '') {
+      const renterRooms = await renterRoom.findOne({room: room_id,user: user_id})
       const bookmark = await Bookmark.findOne({user: user_id, room: room_id})
+      const histories = await RentHistory.findOne({room: room_id,user: user_id,reviewed:false})
       if (bookmark) {
         return res.status(200).json({
           success: true,
-          data: {room, reviews, is_bookmarked: bookmark.isActive,renterRooms},
+          data: {user_id,room, reviews, comments, is_bookmarked: bookmark.isActive,renterRooms, histories},
         })
       }
       return res.status(200).json({
         success: true,
-        data: {room, reviews, is_bookmarked: false,renterRooms},
+        data: {room, reviews,comments, is_bookmarked: false,renterRooms},
       })
     }
 
     return res.status(200).json({
       success: true,
-      data: {room, reviews},
+      data: {room, reviews, comments},
     })
   } catch (error) {
     console.log(error)

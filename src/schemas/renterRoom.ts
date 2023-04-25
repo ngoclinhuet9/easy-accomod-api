@@ -10,6 +10,7 @@ export interface RenterRoomDocument extends Document {
   status: Number       //0: approved, 1: pending
   payFlag: boolean
   createDate: Date
+  reviewed: boolean
 }
 
 const RenterRoomSchema: Schema = new Schema({
@@ -53,6 +54,11 @@ const RenterRoomSchema: Schema = new Schema({
   createDate: {
     type: Date,
     required: false,
+  },
+  reviewed: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 })
 

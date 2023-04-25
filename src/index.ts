@@ -59,7 +59,6 @@ app.use(hpp())
  * user api
  */
 app.post('/api/user/create', getUID, userController.createUser)
-app.get('/api/profileuser', checkAuthOrNot, userController.getProfileUser)
 app.get('/api/profile', checkAuth, userController.getProfile)
 app.put('/api/updateuser', checkAuth, userController.updateUserInfo)
 app.put('/api/updatetoken', checkAuthOrNot, userController.updateToken)
