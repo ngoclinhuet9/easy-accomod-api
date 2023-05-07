@@ -108,6 +108,8 @@ export const getRoomDetail: MiddlewareFn = async (req, res, next) => {
       const renterRooms = await renterRoom.findOne({room: room_id,user: user_id})
       const bookmark = await Bookmark.findOne({user: user_id, room: room_id})
       const histories = await RentHistory.findOne({room: room_id,user: user_id,reviewed:false})
+      console.log(histories, 'checkkkkkk');
+      
       if (bookmark) {
         return res.status(200).json({
           success: true,
@@ -116,7 +118,7 @@ export const getRoomDetail: MiddlewareFn = async (req, res, next) => {
       }
       return res.status(200).json({
         success: true,
-        data: {room, reviews,comments, is_bookmarked: false,renterRooms},
+        data: {room, reviews,comments, is_bookmarked: false,renterRooms, histories},
       })
     }
 

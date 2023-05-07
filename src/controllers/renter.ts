@@ -126,28 +126,22 @@ export const handleRentByPay: MiddlewareFn = async (req, res, next) => {
     const user_id = req.user._id
     const room_id = req.body.room_id
     const room = await Room.findOne({_id: room_id})
-    const renterRooms = await RenterRoom.find({room: room?._id})
     const newRentRoom = new RenterRoom({user: user_id, room: room_id, startDate: req.body.startDate, endPlanDate: req.body.endDate,
       payFlag: true, requestType: 0, status: 0})
-    if(room?.isRent === false && !renterRooms){
+    if(room?.isRent === false){
       await room.updateOne({isRent: true})
-      await newRentRoom.save()
-      return res.status(200).json({
-        success: true,
-        data: room,newRentRoom,
-      })
-      // await Order.insertMany( { renterRoom: newRentRoom._id, amount: vnp_Params.amount, orderInfor: vnp_Params.orderInfor,
-      //      transactionNo: vnp_Params.transactionNo, responseCode: vnp_Params.responseCode, transactionStatus: vnp_Params.transactionStatus, payDate: vnp_Params.payDate } );
-    }
-    if(renterRooms){
-      return res.status(204).json({
-      })
-      // await Order.insertMany( { renterRoom: newRentRoom._id, amount: vnp_Params.amount, orderInfor: vnp_Params.orderInfor,
-      //      transactionNo: vnp_Params.transactionNo, responseCode: vnp_Params.responseCode, transactionStatus: vnp_Params.transactionStatus, payDate: vnp_Params.payDate } );
-    }
-    // const newOder = new Order({renterRoom: newRentRoom._id, amount: vnp_Params.amount, orderInfor: vnp_Params.orderInfor,
-    //   transactionNo: vnp_Params.transactionNo, responseCode: vnp_Params.responseCode, transactionStatus: vnp_Params.transactionStatus, payDate: vnp_Params.payDate})
-    // await newOder.save()
+      const renterRooms = await RenterRoom.find({room: room?._id})
+      if(renterRooms.length === 0){
+        console.log(renterRooms,'=========');
+        await newRentRoom.save()
+        return res.status(200).json({
+          success: true,
+          data: room,newRentRoom,
+        })}
+        else{
+          return res.status(204)
+        }
+      }
     return res.status(400).json({
       success: false,
       error: 'Phòng đã được thuê',

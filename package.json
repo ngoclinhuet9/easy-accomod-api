@@ -9,7 +9,8 @@
     "start": "node build/app.js",
     "dev": "nodemon src/index.ts",
     "faker": "nodemon src/faker/index.ts",
-    "reset": "nodemon src/faker/resetDb.ts"
+    "reset": "nodemon src/faker/resetDb.ts",
+    "delete": "nodemon src/faker/delete_fb.ts"
   },
   "repository": {
     "type": "git",

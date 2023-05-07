@@ -295,7 +295,6 @@ export const handleAcceptRoom: MiddlewareFn = async (req, res, next) => {
     if (renterRooms?.requestType === '0' && renterRooms?.status === 1) {
       console.log('vô đây');
       await renterRooms.update({payFlag: true, status: 0})
-      await room?.update({ countRent: room?.countRent + 1})
       return res.status(200).json({
         success: true,
         data: renterRooms
@@ -304,7 +303,7 @@ export const handleAcceptRoom: MiddlewareFn = async (req, res, next) => {
     if (renterRooms?.requestType === '1' && renterRooms?.status === 1) {
       console.log('hay vô dây');
       
-      await room?.updateOne({ isRent: false})
+      await room?.updateOne({ isRent: false,countRent: room?.countRent + 1})
       const newRentHistory = new RentHistory({user: renterRooms?.user, room: room?.id, startDate: renterRooms?.startDate, 
       endPlanDate: renterRooms?.endPlanDate, createDate: currentDate, requestType: 1, reviewed: renterRooms?.reviewed})
       await newRentHistory.save()

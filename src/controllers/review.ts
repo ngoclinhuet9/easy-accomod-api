@@ -46,9 +46,10 @@ export const createReview: MiddlewareFn = async (req, res, next) => {
     await rooms.update({rating: avgRating})
    }
     if(type === 1){
+      
+      if(renterRoom){await renterRoom.updateOne({reviewed: true})}
+      if(rentHistory){await rentHistory.updateOne({reviewed: true})}
       console.log(renterRoom,rentHistory,'iiiiiiiiiiii');
-      if(renterRoom){await renterRoom.update({reviewed: true})}
-      if(rentHistory){await rentHistory.update({reviewed: true})}
     }
     return res.status(200).json({
       success: true,
@@ -104,6 +105,32 @@ export const rejectReview: MiddlewareFn = async (req, res, next) => {
     return res.status(400).json({
       success: false,
       error: 'update review failed',
+    })
+  }
+}
+
+export const getIsReview: MiddlewareFn = async (req, res, next) => {
+  try {
+    const room_id = req.params.room_id
+    console.log(req.params,'api review');
+    const user_id = req.user._id
+    if (user_id !== '') {
+      const renterRooms = await RenterRoom.findOne({room: room_id,user: user_id})
+      const histories = await RentHistory.findOne({room: room_id,user: user_id,reviewed:false})
+      return res.status(200).json({
+        success: true,
+        data: {renterRooms, histories},
+      })
+    }
+    return res.status(200).json({
+      success: true,
+      data: {room_id, user_id},
+    })
+  } catch (error) {
+    console.log(error)
+    return res.status(400).json({
+      success: false,
+      error: 'get room failed',
     })
   }
 }

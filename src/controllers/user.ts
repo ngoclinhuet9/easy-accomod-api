@@ -1,7 +1,6 @@
 import User from '../models/user';
 import Token from '../models/token';
 import {MiddlewareFn} from '../types/express.d'
-import { isNull } from 'util';
 
 export const createUser: MiddlewareFn = async (req, res, next) => {
   try {

@@ -117,6 +117,7 @@ app.post('/api/payment', checkAuth, roomController.handlePayment)
  * review api
  */
 app.post('/api/reviews/create', checkAuth, reviewController.createReview) // renter
+app.get('/api/isReview/:room_id', checkAuthOrNot, reviewController.getIsReview)
 app.put('/api/reviews/:review_id/approve', checkAuth, reviewController.approveReview) // admin
 app.put('/api/reviews/:review_id/reject', checkAuth, reviewController.rejectReview) // admin
 
